@@ -1,12 +1,15 @@
 const { verifyToken } = require("../services/jwt.service");
-const { promisify } = require("util");
 const { getSessionData } = require("../services/sessionFile.service");
+const { APP_STRINGS } = require("../utils/constants");
+const responseObject = require("../utils/response");
 
 async function authenticateMiddleware(req, res, next) {
   // Get the user from session
   let user = req.session.user;
   const token = req.headers.authorization?.split(" ")[1];
-  if (!user && token !== "undefined") {
+
+  // If user not found in session cookie, use token from authorization header.
+  if (!user && token) {
     const sessionId = verifyToken(token);
     // Add session id to request
     req.sessionId = sessionId;
@@ -16,10 +19,14 @@ async function authenticateMiddleware(req, res, next) {
       user = sessionData.user;
     }
   }
-  if (!user && !token) {
-    res.status(401).send("Unauthorized");
-    return;
+
+  // If user not found in session cookie, or token not in authorization header.
+  // If token is available, token will be parse to get user. After that process,
+  // return 401 if user still not found.
+  if (!user || !token) {
+    return res.status(401).send(responseObject(null, APP_STRINGS.unAuthorize));
   }
+
   // Add user to request
   req.user = user;
   next();

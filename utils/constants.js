@@ -1,36 +1,37 @@
+const APP_NAME = "gdsc-user-service";
+const MASTER_EMAIL = "gdsc.fptudn@gmail.com";
 const EXPIRED_TIME = 1000 * 60 * 60 * 24;
-const SUPPORT_DOMAINS = [];
-const APP_DOMAIN = "https://88456n-3000.csb.app";
+const CORS_DOMAINS = [
+  "http://localhost:5173",
+  "https://portfolio-site-demo.vercel.app",
+];
 const APP_STRINGS = {
-  notAllowedEmail: (email) => `Not allowed email: ${email}`,
-  userNotFound: (id) => `User with id: ${id} not found in Firebase Database`,
-  updateSuccess: (email) => `Updated user with email: ${email}`,
-  deleteSuccess: (email) => `Deleted user with email: ${email}`,
-  userNameAvailable: (userName) => `User name: ${userName} is available`,
-  userNameNotAvailable: (userName) => `User name: ${userName} is not available`,
+  authorize: "Verified request.",
+  unAuthorize:
+    "This request is un-authorized. No cookie or authorization found!",
+  invalidAccessToken: "This access-token is invalid or expired.",
+  verifiedAccessToken: "Access-token verified.",
+  logout: (id) => `User ${id} logged out.`,
+  notAllowedEmail: (email) => `Not allowed email: ${email}.`,
+  userNotFound: (id) => `User with id: ${id} not found in Firebase Database.`,
+  createdUser: (id) => `Created user with id: ${id}.`,
+  updateSuccess: (id) => `Updated user with id: ${id}.`,
+  deleteSuccess: (id) => `Deleted user with id: ${id}.`,
+  userNameAvailable: (userName) => `User name: ${userName} is available.`,
+  userNameNotAvailable: (userName) =>
+    `User name: ${userName} is not available.`,
+  emailRequired: "Email is required!",
+  emptyVariable: (name) => `Variable '${name}' is undefined!`,
+  wrongTypeVariable: (name, expectType, foundType) =>
+    `Variable ${name} must be ${expectType}, but found ${foundType}.`,
 };
-
-const DOC_TEMPLATE = `
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>GDSC User Service</title>
-  </head>
-  <body>
-    <img src="https://seeklogo.com/images/G/google-developers-logo-F8BF3155AC-seeklogo.com.png" alt="logo" width="100">
-    <h1>GDSC User Back-end Service</h1>
-    <span>Served URL: </span>
-    <a href="${APP_DOMAIN}">${APP_DOMAIN}</a>
-  </body>
-</html>
-`;
+const PLACEHOLDER_AVATAR = "https://i.pravatar.cc/100";
 
 module.exports = {
+  APP_NAME,
+  MASTER_EMAIL,
   EXPIRED_TIME,
-  SUPPORT_DOMAINS,
-  APP_DOMAIN,
+  CORS_DOMAINS,
   APP_STRINGS,
-  DOC_TEMPLATE,
+  PLACEHOLDER_AVATAR,
 };

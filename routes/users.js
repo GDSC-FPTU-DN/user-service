@@ -2,41 +2,45 @@ var express = require("express");
 const {
   getAllUsers,
   getUserById,
-  getUserByEmail,
   getUserByUserName,
 } = require("../controllers/getUser.controller");
 const {
-  updateUserNameByEmail,
+  updateUserNameById,
+  updateIsAdminRoleById,
 } = require("../controllers/updateUser.controller");
-const {
-  deleteUserByEmail,
-  deleteUserById,
-} = require("../controllers/deleteUser.controller");
+const { deleteUserById } = require("../controllers/deleteUser.controller");
 const responseObject = require("../utils/response");
 const authenticateMiddleware = require("../middlewares/authenticate.middleware");
-const { APP_STRINGS } = require("../utils/constants");
+const userGuardMiddleware = require("../middlewares/userGuard.middleware");
+const { APP_STRINGS, MASTER_EMAIL } = require("../utils/constants");
 const {
   getSessionData,
   setSessionData,
 } = require("../services/sessionFile.service");
+const { createUser } = require("../controllers/createUser.controller");
 
 var router = express.Router();
 
+// Get all users
 router.get("/", async function (req, res, next) {
   const users = await getAllUsers();
   res.status(200).send(responseObject(users));
 });
 
+// Get user by Id
 router.get("/:id", async function (req, res, next) {
   const userId = req.params.id;
   const user = await getUserById(userId);
   if (!user) {
-    res.status(404).send(APP_STRINGS.userNotFound(userId));
+    res
+      .status(404)
+      .send(responseObject(null, APP_STRINGS.userNotFound(userId)));
   } else {
     res.status(200).send(responseObject(user));
   }
 });
 
+// Check username is available
 router.get("/check/:uname", async function (req, res, next) {
   const userName = req.params.uname;
   const user = await getUserByUserName(userName);
@@ -51,56 +55,95 @@ router.get("/check/:uname", async function (req, res, next) {
   }
 });
 
-router.post("/update", authenticateMiddleware, async function (req, res, next) {
-  // Get user email from authenticateMiddleware
-  const email = req.user?.email;
-  if (!email) {
-    res.status(401).send(responseObject(false, "Something went wrong"));
-    return;
+// Create user. Only for admin
+router.post(
+  "/",
+  authenticateMiddleware,
+  userGuardMiddleware(["admin"]),
+  async function (req, res, next) {
+    const user = await createUser(req.body);
+    return res
+      .status(200)
+      .send(responseObject(null, APP_STRINGS.createdUser(user.id)));
   }
-  // Update user name
+);
+
+// Update user
+router.put("/", authenticateMiddleware, async function (req, res, next) {
+  // Get user id from authenticateMiddleware
+  const id = req.user?.id;
+  console.log(id);
+  // Update userName if userName in request body.
   const userName = req.body.userName;
-  await updateUserNameByEmail(email, userName);
-  // Update user
+  if (userName) {
+    await updateUserNameById(id, userName);
+  }
+
+  // Update user in session store.
   const updatedUser = {
     ...req.user,
     userName,
   };
+  // Update session data by sessionId from authenticationMiddleware
   const sessionData = await getSessionData(req.sessionStore, req.sessionId);
   if (!sessionData) {
     sessionData.user = updatedUser;
     await setSessionData(req.sessionStore, req.sessionId, sessionData);
   }
-  res.status(200).send(responseObject(true, APP_STRINGS.updateSuccess(email)));
+
+  res.status(200).send(responseObject(null, APP_STRINGS.updateSuccess(id)));
 });
 
-router.delete(
-  "/delete",
+// Update user isAdmin role. Only for master email.
+router.put(
+  "/admin/:id",
   authenticateMiddleware,
+  userGuardMiddleware([`email:${MASTER_EMAIL}`, "!email:REF_USER_EMAIL"]),
   async function (req, res, next) {
-    // Get user email from authenticateMiddleware
-    const email = req.user?.email;
-    await deleteUserByEmail(email);
-    res.status(200).send(APP_STRINGS.deleteSuccess(email));
-  },
+    const id = req.params.id;
+    const admin = req.body.admin;
+    await updateIsAdminRoleById(id, admin);
+    // Delete session. This action will force user with userName re-login to get new admin.
+    // TODO: Update when complete Admin website.
+    res.status(200).send(responseObject(null, APP_STRINGS.updateSuccess(id)));
+  }
 );
 
-router.delete(
-  "/delete/:id",
+// Update user by Id. Only for admin
+router.put(
+  "/:id",
   authenticateMiddleware,
+  userGuardMiddleware(["admin"]),
   async function (req, res, next) {
-    // Get user email from authenticateMiddleware
-    const email = req.user.email;
-    // Find user by email
-    const user = await getUserByEmail(email);
-    // Check if user is admin
-    if (user.admin) {
-      await deleteUserById(req.params.id);
-      res.status(200).send(APP_STRINGS.deleteSuccess(email));
-    } else {
-      res.status(405).send(APP_STRINGS.notAllowedEmail(email));
-    }
-  },
+    const id = req.params.id;
+    const userName = req.body.userName;
+    await updateUserNameById(id, userName);
+    // Delete session. This action will force user with userName re-login to get new userName.
+    // TODO: Update when complete Admin website.
+    res.status(200).send(responseObject(null, APP_STRINGS.updateSuccess(id)));
+  }
+);
+
+// Delete user
+router.delete("/", authenticateMiddleware, async function (req, res, next) {
+  // Get user email from authenticateMiddleware
+  const id = req.user?.id;
+  await deleteUserById(id);
+  res.status(200).send(responseObject(null, APP_STRINGS.deleteSuccess(id)));
+});
+
+// Delete user with Id. Only for admin
+router.delete(
+  "/:id",
+  authenticateMiddleware,
+  userGuardMiddleware(["admin"]),
+  async function (req, res, next) {
+    const userId = req.params.id;
+    await deleteUserById(userId);
+    res
+      .status(200)
+      .send(responseObject(null, APP_STRINGS.deleteSuccess(userId)));
+  }
 );
 
 module.exports = router;

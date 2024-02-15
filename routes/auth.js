@@ -7,6 +7,7 @@ const {
   updateOrCreateUser,
 } = require("../controllers/updateOrCreateUser.controller");
 const { generateToken } = require("../services/jwt.service");
+const { APP_STRINGS } = require("../utils/constants");
 require("../services/passport.service");
 
 const router = express.Router();
@@ -16,7 +17,7 @@ router.get(
   "/google",
   passport.authenticate("google", {
     scope: ["profile", "email"],
-  }),
+  })
 );
 
 // Callback URL for Google
@@ -25,23 +26,24 @@ router.get(
   passport.authenticate("google", { failureRedirect: "/api/auth/google" }),
   (req, res) => {
     res.send(
-      `<script>window.opener.postMessage('Redirecting', '*'); window.close();</script>`,
+      `<script>window.opener.postMessage('Redirecting', '*'); window.close();</script>`
     );
-  },
+  }
 );
 
-router.post("/verify", async (req, res, next) => {
+// Verify access-token from Google
+router.post("/verify-access-token", async (req, res, next) => {
   const { token } = req.body;
   const payload = await getUserByAccessToken(token);
   if (!payload) {
-    res.status(401).send(responseObject(null, "Invalid token"));
+    res.status(401).send(responseObject(null, APP_STRINGS.invalidAccessToken));
     return;
   }
   // Update User info
   const user = await updateOrCreateUser(
     payload.email,
     payload.name,
-    payload.picture,
+    payload.picture
   );
   // Register session
   req.session.user = user;
@@ -49,24 +51,33 @@ router.post("/verify", async (req, res, next) => {
     token: generateToken(req.session.id),
     user: user,
   };
-  res.status(200).send(responseObject(responseData, "Token verified"));
+  res
+    .status(200)
+    .send(responseObject(responseData, APP_STRINGS.verifiedAccessToken));
 });
 
-// Authorize services
+// Verify if token from authorization header is valid. Used for third-party service.
+router.get("/verify", authenticateMiddleware, function (req, res, next) {
+  res.status(200).send(responseObject(true, APP_STRINGS.authorize));
+});
+
+// OTP
+router.post(
+  "/verify-otp",
+  authenticateMiddleware,
+  async (req, res, next) => {}
+);
+
+// Authorize user
 router.get("/me", authenticateMiddleware, async (req, res, next) => {
-  const user = req.user;
-
-  if (!user) {
-    res.status(401).send(`Email ${user?.email} is not allowed`);
-    return;
-  }
-
-  res.status(200).send(responseObject(user));
+  res.status(200).send(responseObject(req.user));
 });
 
-router.get("/logout", (req, res) => {
+// Logout
+router.get("/logout", authenticateMiddleware, (req, res) => {
+  const userId = req.user?.id;
   req.session.destroy();
-  res.status(200).send(responseObject(null, "Logged out"));
+  res.status(200).send(responseObject(null, APP_STRINGS.logout(userId)));
 });
 
 module.exports = router;

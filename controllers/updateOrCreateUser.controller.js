@@ -4,7 +4,7 @@ const { getToday } = require("../utils/utilities");
 
 // Update user information, create new user if it doesn't exist
 // Return user information, or null if user is not allowed
-async function updateOrCreateUser(email, name, avatar) {
+async function updateOrCreateUser(email, name, avatar, userName = "") {
   // Check if email is allowed
   if (!checkAllowedEmail(email)) {
     return null;
@@ -19,8 +19,8 @@ async function updateOrCreateUser(email, name, avatar) {
       name,
       email,
       avatar,
+      userName,
       admin: false,
-      userName: "",
       createDate: getToday(),
     });
   }
