@@ -7,7 +7,13 @@ src="https://seeklogo.com/images/G/google-developers-logo-F8BF3155AC-seeklogo.co
 # User Services
 
 ![version](https://img.shields.io/badge/version-0.1.0-green)
-![release](https://img.shields.io/badge/release-0.1.0-blue)s
+![release](https://img.shields.io/badge/release-0.1.0-blue)
+
+### Documentation
+
+[<img src="https://run.pstmn.io/button.svg" alt="Run In Postman" style="width: 128px; height: 32px;">](https://www.postman.com/descent-module-geoscientist-75972537/workspace/primary/collection/18872598-f5d9d345-89e0-4530-b8ce-4a63e9186869?action=share&creator=18872598)
+
+Checkout admin control panel here: [Admin Control Panel]()
 
 ## ✨ Services
 
@@ -22,12 +28,6 @@ src="https://seeklogo.com/images/G/google-developers-logo-F8BF3155AC-seeklogo.co
 ```bash
 curl --location '{domain}/api/auth/verify' --header 'Authorization: Bearer {token}'
 ```
-
-### Documentation
-
-Checkout Postman documentation here: [Postman Docs]()
-
-Checkout admin control panel here: [Admin Control Panel]()
 
 ## 🖥️ Technologies
 
