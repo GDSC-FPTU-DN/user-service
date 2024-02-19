@@ -16,9 +16,12 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: gdscfptu/user-service:latest
+          image: gdscfptu/user-service:main
           ports:
             - containerPort: 3000
+          envFrom:
+            - secretRef:
+                name: gdscfptu-user-service-secrets
         - name: redis
           image: redis:latest
           ports:

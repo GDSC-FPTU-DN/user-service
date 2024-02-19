@@ -1,4 +1,10 @@
+# Environment keys
 .env
+kubernetes/secret.yaml
+
+# Packages
 /node_modules
+
+# App generated data
 /sessions
 /data
