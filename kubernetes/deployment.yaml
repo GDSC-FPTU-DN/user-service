@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gdscfptu-user-service-deployment
+  labels:
+    app: user-service-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: user-service-depl
+  template:
+    metadata:
+      labels:
+        app: user-service-depl
+    spec:
+      containers:
+        - name: user-service
+          image: gdscfptu/user-service:latest
+          ports:
+            - containerPort: 3000
+        - name: redis
+          image: redis:latest
+          ports:
+            - containerPort: 6379

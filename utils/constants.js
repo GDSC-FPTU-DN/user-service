@@ -1,6 +1,7 @@
 const APP_NAME = "gdsc-user-service";
 const MASTER_EMAIL = "gdsc.fptudn@gmail.com";
 const EXPIRED_TIME = 1000 * 60 * 60 * 24;
+const CACHE_EXPIRED_TIME = 60 * 60;
 const CORS_DOMAINS = [
   "http://localhost:5173",
   "https://portfolio-site-demo.vercel.app",
@@ -24,6 +25,7 @@ const APP_STRINGS = {
   emptyVariable: (name) => `Variable '${name}' is undefined!`,
   wrongTypeVariable: (name, expectType, foundType) =>
     `Variable ${name} must be ${expectType}, but found ${foundType}.`,
+  bug: (message) => `Bug from development: ${message}`,
 };
 const PLACEHOLDER_AVATAR = "https://i.pravatar.cc/100";
 
@@ -31,6 +33,7 @@ module.exports = {
   APP_NAME,
   MASTER_EMAIL,
   EXPIRED_TIME,
+  CACHE_EXPIRED_TIME,
   CORS_DOMAINS,
   APP_STRINGS,
   PLACEHOLDER_AVATAR,

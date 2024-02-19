@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  api:
+    build: .
+    container_name: "gdscfptu-user-service-container"
+    image: "gdscfptu/user-service"
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./.env
+    volumes:
+      - .:/app
+      - ./sessions:/app/sessions
+      - /app/node_modules
+    depends_on:
+      - redis
+  redis:
+    image: "redis:latest"
+    container_name: "gdscfptu-redis-container"
+    expose:
+      - 6379
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./data:/data
+    

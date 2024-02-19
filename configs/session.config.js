@@ -9,12 +9,12 @@ const sessionConfig = {
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: true,
+  store: new FileStore(sessionFileConfig),
   cookie: {
     maxAge: EXPIRED_TIME,
     httpOnly: true,
     secure: true,
     sameSite: "none",
-    store: new FileStore(sessionFileConfig),
   },
 };
 

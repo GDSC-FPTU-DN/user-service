@@ -8,6 +8,9 @@ RUN npm install
 
 COPY . /app
 
+VOLUME [ "/sessions" ]
+
 EXPOSE 3000
 
-CMD [ "npm", "run", "deploy" ]
+# CMD [ "npm", "run", "deploy" ]
+CMD [ "npm", "run", "dev" ]

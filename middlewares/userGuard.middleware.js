@@ -6,9 +6,11 @@ function userGuardMiddleware(roles) {
   async function middleware(req, res, next) {
     // Return if request is un-authenticate
     if (!req.user) {
-      return res
-        .status(401)
-        .send(responseObject(null, APP_STRINGS.unAuthorize));
+      throw new Error(
+        APP_STRINGS.bug(
+          "The 'userGuardMiddleware' must be called after 'authenticateMiddleware"
+        )
+      );
     }
     for (const role of roles) {
       // If role is admin
@@ -20,22 +22,22 @@ function userGuardMiddleware(roles) {
             .send(responseObject(null, APP_STRINGS.notAllowedEmail(userEmail)));
         }
       }
+      // If role is email. Format: email:example@gmail.com
       if (role.includes("email")) {
-        let email = role.split(":")[1];
-        if (email === "REF_USER_EMAIL") {
-          email = req.user?.email;
-        }
-        // Include email
+        const email = role.split(":")[1];
+        // Include email from role
         if (req.user?.email !== email) {
           return res
             .status(405)
             .send(responseObject(null, APP_STRINGS.notAllowedEmail(email)));
         }
-        // Exclude email
-        if (role.includes("!") && req.user?.email === email) {
-          return res
-            .status(405)
-            .send(responseObject(null, APP_STRINGS.notAllowedEmail(email)));
+        // Exclude email from role
+        if (role.includes("!")) {
+          if (req.user?.email === email) {
+            return res
+              .status(405)
+              .send(responseObject(null, APP_STRINGS.notAllowedEmail(email)));
+          }
         }
       }
     }

@@ -18,6 +18,7 @@ const { loggerMiddleware } = require("./middlewares/logger.middleware");
 const sessionConfig = require("./configs/session.config");
 const corsConfig = require("./configs/cors.config");
 const swaggerConfig = require("./configs/swagger.config");
+const redisClient = require("./configs/redis.config");
 const { APP_NAME } = require("./utils/constants");
 
 // App setup
@@ -51,6 +52,12 @@ app.use("/api/users", usersRouter);
 app.use("/api/auth", authRouter);
 
 // Start the server
-app.listen(port, () => {
-  console.log(`${APP_NAME} is listening on port: ${port}`);
-});
+async function startServer() {
+  // Connect to redis client
+  await redisClient.connect();
+  app.listen(port, () => {
+    console.log(`${APP_NAME} is listening on port: ${port}`);
+  });
+}
+
+startServer();
