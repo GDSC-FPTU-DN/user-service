@@ -1,3 +1,20 @@
+# Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: gdscfptu-user-service-pvc
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Mi
+
+---
+# Deployments
+
 apiVersion: apps/v1
 kind: Deployment
 
@@ -19,19 +36,54 @@ spec:
         app: user-service-depl
 
     spec:
+      volumes:
+        - name: gdscfptu-user-service-volume
+          persistentVolumeClaim:
+            claimName: gdscfptu-user-service-pvc
       containers:
         - name: user-service
-          image: user-service:latest
-          imagePullPolicy: Never
+          image: gdscfptu/user-service:main
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
               name: api-port
           envFrom:
             - secretRef:
                 name: gdscfptu-user-service-secrets
+          volumeMounts:
+            - name: gdscfptu-user-service-volume
+              mountPath: /app/sessions
 
         - name: redis
-          image: redis:latest
+          image: redis:7.2.4-alpine
           ports:
             - containerPort: 6379
               name: redis-port
+          volumeMounts:
+            - name: gdscfptu-user-service-volume
+              mountPath: /data
+
+---
+# Services
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: gdscfptu-user-service-service
+
+spec:
+  type: ClusterIP
+  ports:
+    - name: user-service
+      protocol: TCP
+      port: 3000
+      targetPort: api-port
+
+    - name: redis
+      protocol: TCP
+      port: 6379
+      targetPort: redis-port
+
+  selector:
+    app: user-service-depl
