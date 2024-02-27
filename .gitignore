@@ -1,6 +1,7 @@
 # Environment keys
 .env
 kubernetes/secret.yaml
+credentials.json
 
 # Packages
 /node_modules

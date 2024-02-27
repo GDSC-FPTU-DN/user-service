@@ -43,7 +43,7 @@ spec:
       containers:
         - name: user-service
           image: gdscfptu/user-service:main
-          imagePullPolicy: Always
+          # imagePullPolicy: Always
           ports:
             - containerPort: 3000
               name: api-port
@@ -55,7 +55,7 @@ spec:
               mountPath: /app/sessions
 
         - name: redis
-          image: redis:7.2.4-alpine
+          image: redis:latest
           ports:
             - containerPort: 6379
               name: redis-port
