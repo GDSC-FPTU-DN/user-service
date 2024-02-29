@@ -1,16 +1,49 @@
+# Storage Class
+# apiVersion: v1
+# kind: StorageClass
+
+# metadata:
+#   name: ebs-sc
+
+# provisioner: ebs.csi.aws.com
+# volumeBindingMode: WaitForFirstConsumer
+
+# ---
+# Persistent Volume
+# apiVersion: v1
+# kind: PersistentVolume
+
+# metadata:
+#   name: gdscfptu-user-service-pv
+#   labels:
+#     type: gdscfptu-user-service-pv
+
+# spec:
+#   capacity:
+#     storage: 1Gi
+#   storageClassName: gp2
+#   accessModes:
+#     - ReadOnlyMany
+
+#   awsElasticBlockStore:
+#     fsType: ext4
+#     volumeID: vol-01cf524016b595f58
+
+---
 # Persistent Volume Claim
-apiVersion: v1
-kind: PersistentVolumeClaim
+# apiVersion: v1
+# kind: PersistentVolumeClaim
 
-metadata:
-  name: gdscfptu-user-service-pvc
+# metadata:
+#   name: gdscfptu-user-service-pvc
 
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 2Mi
+# spec:
+#   accessModes:
+#     - ReadWriteMany
+#   storageClassName: gp2
+#   resources:
+#     requests:
+#       storage: 1Gi
 
 ---
 # Deployments
@@ -36,50 +69,65 @@ spec:
         app: user-service-depl
 
     spec:
-      volumes:
-        - name: gdscfptu-user-service-volume
-          persistentVolumeClaim:
-            claimName: gdscfptu-user-service-pvc
+      # volumes:
+      #   - name: gdscfptu-user-service-volume
+      #     persistentVolumeClaim:
+      #       claimName: gdscfptu-user-service-pvc
       containers:
         - name: user-service
           image: gdscfptu/user-service:main
-          # imagePullPolicy: Always
+          imagePullPolicy: Always
           ports:
             - containerPort: 3000
               name: api-port
           envFrom:
             - secretRef:
                 name: gdscfptu-user-service-secrets
-          volumeMounts:
-            - name: gdscfptu-user-service-volume
-              mountPath: /app/sessions
+          # volumeMounts:
+          #   - name: gdscfptu-user-service-volume
+          #     mountPath: /app/sessions
 
         - name: redis
           image: redis:latest
           ports:
             - containerPort: 6379
               name: redis-port
-          volumeMounts:
-            - name: gdscfptu-user-service-volume
-              mountPath: /data
+          # volumeMounts:
+          #   - name: gdscfptu-user-service-volume
+          #     mountPath: /data
 
 ---
-# Services
+# Services for api
 
 apiVersion: v1
 kind: Service
 
 metadata:
-  name: gdscfptu-user-service-service
+  name: gdscfptu-user-service-service-api
+
+spec:
+  type: LoadBalancer
+  ports:
+    - name: user-service
+      protocol: TCP
+      port: 80
+      targetPort: api-port
+
+  selector:
+    app: user-service-depl
+
+---
+# Services for redis
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: gdscfptu-user-service-service-redis
 
 spec:
   type: ClusterIP
   ports:
-    - name: user-service
-      protocol: TCP
-      port: 3000
-      targetPort: api-port
-
     - name: redis
       protocol: TCP
       port: 6379

@@ -1,7 +1,7 @@
 # Environment keys
 .env
 kubernetes/secret.yaml
-credentials.json
+keys/
 
 # Packages
 /node_modules
@@ -9,3 +9,6 @@ credentials.json
 # App generated data
 /sessions
 /data
+
+# Terraform
+.terraform/
